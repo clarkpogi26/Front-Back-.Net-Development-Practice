@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title></title>
+</head>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        margin: 20;
+        height: 100vh;
+        background: linear-gradient(to right, red, blue);
+    }
+    button {
+        background: radial-gradient(circle at right, red, transparent 100%);
+        border-radius: 30px;
+    }
+    #authArea {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        border: 5px solid black;
+        padding: 20px 10px 0 10px;
+        border-radius: 26px;
+        background: radial-gradient(circle at bottom left, green, transparent 100%),
+                    radial-gradient(circle at top right, purple, transparent 100%),
+                    radial-gradient(circle, black, transparent 100%);
+        gap: 10px;
+    }
+    #afterArea {
+        display: none;
+    }
+</style>
+<body>
+    <div id="authArea">
+    <input placeholder="Username" id="name">
+    <input placeholder="Password" id="word">
+    <button onclick="Login()">Check</button>
+
+    <input placeholder="Username" id="user">
+    <input placeholder="Password" id="pass">
+    <button onclick="Register()">Regis</button>
+    <p id="result"></p>
+
+    <button onclick="ShowUser()">Show Users</button>
+    <p id="accs"></p>
+    </div>
+    <div id="afterArea">
+        <input id="cuser" placeholder="Change username">
+        <button onclick="UpdateUser()">Change Name</button>
+        <input id="cpass" placeholder="Change username">
+        <button onclick="UpdatePass()">Change Pass</button>
+        <button onclick="DelUser()">Delete User</button>
+        <p id="curuser"></p>
+    </div>
+    <script>
+        let curUser = null;
+        async function Register() {
+            const juser = document.getElementById("user").value;
+            const jpass = document.getElementById("pass").value;
+            try {
+            const response = await axios.post(`http://localhost:5112/api/profile/register`, {
+                Name: juser,
+                Pass: jpass
+            })
+            document.getElementById("result").textContent = response.data.msg;
+        }
+        catch (error) {
+            document.getElementById("result").textContent = error.response.data.msg;
+            console.error(error.response.data.error);
+            console.log("test");
+        }
+        }
+        async function Login() {
+            const jname = document.getElementById("name").value;
+            const jword = document.getElementById("word").value;
+            try {
+                const response = await axios.post(`http://localhost:5112/api/profile/login`, {
+                    Name: jname,
+                    Pass: jword
+                })
+                curUser = response.data.uzer;              
+                document.getElementById("curuser").textContent = curUser.name;
+                document.getElementById("result").textContent = response.data.msg;
+                document.getElementById("afterArea").style.display = "flex";
+                document.getElementById("authArea").style.display = "none";
+            }
+            catch (error) {
+                document.getElementById("result").textContent = error.response.data.msg;
+            }
+        }
+        async function UpdateUser() {
+            const juser = document.getElementById("cuser").value;
+            try {
+                const response = await axios.put(`http://localhost:5112/api/profile/byname/${curUser}`, {
+                    Name: juser
+                })
+                console.log(response.data.msg);
+            } catch (error) {
+                console.error(error.response.data.msg);
+            }
+        }
+        async function UpdatePass() {
+            const jpass = document.getElementById("cpass").value;
+            try {
+                const response = await axios.put(`http://localhost:5112/api/profile/bypass`, {
+                    Name: curUser,
+                    Pass: jpass
+                })
+                console.log(response.data.msg)
+            } catch (error) {
+                console.error(error.response.data.msg)
+            }
+        }
+        function ShowUser() {
+            axios.get(`http://localhost:5112/api/profile/show`)
+            .then(res => {
+                users = res.data;
+                let output = "";
+                for (let key in users) {
+                    let u = users[key];
+                    output += `${key}. ${u.name} | ${u.pass}<br>`;
+                } document.getElementById("accs").innerHTML = output;
+            })
+            .catch(err => {
+                document.getElementById("accs").textContent = err.response.data;
+            })
+        }
+        async function DelUser() {
+            try {
+                const response = await axios.delete(`http://localhost:5112/api/profile/delete/${curUser.name}`)
+                console.log(response.data.msg)
+            } catch (error) {
+                console.error(error.response.data.msg)
+            }
+        }
+    </script>
+</body>
+</html>

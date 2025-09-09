@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Backend Practice</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at bottom left, blue, transparent 70%), 
+                        radial-gradient(circle at top right, red, transparent 70%),
+                        radial-gradient(circle, purple, transparent 50%);
+            height: 100vh;
+        }
+        #curuser {
+            display: flex;
+            justify-content: center;
+        }
+        #gameArea {
+            display: none;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            border: 2px solid black;
+            border-width: 2px 2px 2px 2px;
+            border-radius: 30px;
+            padding: 30px 20px 20px 20px;
+        }
+        #title {
+            display: flex;
+            justify-content: center;
+            font-size: 50px;
+            font-weight: bold;
+            user-select: none;
+            font-style: italic;
+            text-shadow: 1px 1px 0 #333,
+                         2px 2px 0 #333,
+                         3px 3px 0 #333,
+                         4px 4px 0 #333,
+                         5px 5px 0 #333;
+            margin: 0;
+        }
+        .logister {
+            display: flex;
+            justify-content: center;
+        }
+        input {
+            margin: 10px 0;
+            padding: 5px;
+            border: 1px solid purple;
+            border-radius: 12px;
+        }
+        button {
+            color: purple;
+            border-radius: 16px;
+        }
+        #login {
+            background: radial-gradient(circle, lightgreen, green);
+        }
+        #register {
+            background: radial-gradient(circle, lightblue, blue);
+            margin-bottom: 5px;
+        }
+        #logout {
+            background: radial-gradient(circle, rgb(243, 146, 146), red);
+        }
+        #authArea {
+            border: 2px solid black;
+            border-radius: 30px;
+            padding: 30px 20px 20px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="authArea">
+        <h1 id="title">Hi-Lo!</h1>
+        <p class="logister">Login:</p>
+        <input id="namelogin">
+        <input id="passlogin">
+        <button onclick="LoginAccount()" id="login" class="but">Login</button>
+        <p id="auth"></p>
+
+        <p class="logister">Register:</p>       
+        <input id="nameinput">
+        <input id="passinput">
+        <button onclick="CreateAccount()" id="register" class="but">Register</button>
+        <button onclick="ShowAcc()" class="but">Show Accounts</button>
+        <p id="accs"></p>
+    </div>
+
+    <div id="gameArea">
+        <h1 id="curuser"></h1>
+        <p id="score"></p>
+        <input id="input" onkeydown="hkd(event)" placeholder="Type Guess:">
+        <p id="test"></p>
+        <button onclick="LogoutAccount()" id="logout">Logout</button>
+        <button onclick="DeleteUser(), LogoutAccount()">Delete User</button>
+    </div>  
+<script>
+    let curuser = null;
+    let jscore = 0;
+    function hkd(event) {
+        if (event.key === "Enter") {
+            getData();
+        }
+    }
+    function getData() {
+        let hilo = document.getElementById("input").value;
+        axios.post(`http://localhost:5112/api/highlow/${hilo}`, {
+        })
+        .then(res => {
+            let rexult = res.data;
+            document.getElementById("test").textContent = rexult.result;
+            if (rexult.result === "Correct") {
+                jscore++;
+                document.getElementById("score").textContent = "Score: " + jscore;
+                axios.patch(`http://localhost:5112/api/highlow/score`, {
+                    name: curuser.name,
+                    score: jscore
+                })
+                .then(res => {
+                    console.log(res.data);
+                })
+                .catch(err => {
+                    console.error(err.response.data.error);
+                })
+            }
+        })
+        .catch(err => {
+            document.getElementById("test").textContent = err.response.data.error;
+        });
+    }
+    function CreateAccount() {
+        let jname = document.getElementById("nameinput").value;
+        let jpass = document.getElementById("passinput").value;
+        axios.post(`http://localhost:5112/api/highlow/account`, {
+            name: jname,
+            pass: jpass,
+            score: 0
+        })
+        .then(res => {
+            console.log(res)
+        })
+        .catch(err => {
+            console.error(err)
+        })
+    }
+    function LoginAccount() {
+        let jname = document.getElementById("namelogin").value;
+        let jpass = document.getElementById("passlogin").value;
+        axios.post(`http://localhost:5112/api/highlow/login`, {
+            name: jname,
+            pass: jpass,
+        })
+        .then(res => {
+            curuser = res.data.user;
+            document.getElementById("curuser").textContent = curuser.name;
+            document.getElementById("authArea").style.display = "none";
+            document.getElementById("gameArea").style.display = "flex";
+        })
+        .catch(err => {
+            document.getElementById("auth").textContent = err.response.data.error;
+        })
+    }
+    function LogoutAccount() {
+        document.getElementById("curuser").textContent = "";
+        document.getElementById("authArea").style.display = "flex";
+        document.getElementById("gameArea").style.display = "none";
+        jscore = 0;
+    }
+    async function DeleteUser() {
+        try {
+            const response = await axios.delete(`http://localhost:5112/api/highlow/byname/${curuser.name}`);
+            console.log("User deleted: ", response.data);
+        } catch (error) {
+            console.error("Error deleting user: ", error.response?.data || error.message)
+        }
+    }
+    function ShowAcc() {
+        axios.get(`http://localhost:5112/api/highlow/showacc`)
+        .then(res => {
+            let users = res.data;
+            let output = "";
+            for (let key in users) {
+                let u = users[key];
+                output += `${key}. Name: ${u.name} | Pass: ${u.pass} (${u.score})<br>`;
+            }
+            document.getElementById("accs").innerHTML = output;
+        })
+        .catch(err => {
+            document.getElementById("accs").textContent = err;
+        })
+    }
+</script>
+</body>
+</html>

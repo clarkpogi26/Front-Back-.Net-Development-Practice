@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Backend Practice</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <p id="account">
+    <input id="user" placeholder="Enter Username:">
+    <input id="pass" placeholder="Enter Password:">
+    <button onclick="Rock()">Rock</button>
+    <button onclick="Paper()">Paper</button>
+    <button onclick="Scissor()">Scissor</button>    
+    <button onclick="Account()">Click</button>
+    <button onclick="Show()">Show</button>
+    <p id="score"></p>
+    <pre id="output"></pre>
+<script>
+    let pScore = 0;
+    let bScore = 0;
+    function Rock() {
+        choice = "rock"
+        GetData()
+    }
+    function Paper() {
+        choice = "paper"
+        GetData()
+    }
+    function Scissor() {
+        choice = "scissor"
+        GetData()
+    }
+    function GetData() {
+        axios.get(`http://localhost:5112/api/users/${choice}`)
+        .then(res => {
+            document.getElementById("output").textContent = JSON.stringify(res.data, null, 2);
+            if (res.data.result == "Player Won!") {
+            pScore++;
+        } else {
+            bScore++;
+        }
+        document.getElementById("score").textContent = `${pScore} / ${bScore}`;
+        })        
+        .catch(err => {
+            document.getElementById("output").textContent = err;
+        });        
+    }
+    function Account() {
+            let user = document.getElementById("user").value;
+            let pass = document.getElementById("pass").value;
+        axios.post(`http://localhost:5112/api/account/accinput`, {
+            user: user,
+            pass: pass
+        })
+        .then(res => {
+            console.log("User Added: ", res.data);
+        })
+        .catch(err => {
+            console.error("error", err);
+        });
+    }
+    function Show() {
+        axios.get("http://localhost:5112/api/account/result")
+        .then(res => {
+            console.log(res.data);
+            for (let key in res.data) {
+                let user = res.data[key];
+                console.log(`ID: ${key}, User: ${user.user} Pass: ${user.pass}`);
+            }
+        })
+        .catch(err => console.error(err));
+    }
+</script>
+</body>
+</html>

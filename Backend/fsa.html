@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Web Page</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1 id="curuser"></h1>
+    <input id="regname" placeholder="Username">
+    <input id="regpass" placeholder="Password">
+    <input id="balance" placeholder="Amount">
+    <input id="recipient" placeholder="Send to">
+    <button onclick="Transfer()">Send</button>
+    <button onclick="Register()">Register</button>
+    <button onclick="Login()">Login</button>
+    <button onclick="Deposit()">Deposit</button>
+    <button onclick="Withdraw()">Withdraw</button>
+    <button onclick="Show()">Show</button>
+    <button onclick="Transactions()">Transactions</button>
+    <button onclick="Clear()">Clear</button>
+    <button onclick="TransRemove()">Transaction Clear</button>
+    <p id="accounts"></p>
+    <p id="transactions"></p>
+    <p id="test"></p>
+    <script>
+        let curUser = null;
+        async function Login() {
+            try {
+                const response = await axios.post(`http://localhost:5112/api/bank/login`, {
+                Name: "Clarks",
+                Pass: "clark@"
+            })
+            curUser = response.data.user;
+            document.getElementById("curuser").textContent = `${curUser.name} | ${curUser.balance}`;
+            document.getElementById("test").textContent = response.data.msg
+            } catch (error) {
+                document.getElementById("test").textContent = error.response.data.msg;
+            }     
+        }
+        async function Register() {
+            let regname = document.getElementById("regname").value;
+            let regpass = document.getElementById("regpass").value;
+            try {
+                const response = await axios.post(`http://localhost:5112/api/bank/register`, {
+                    Name: regname,
+                    Pass: regpass
+                })
+                document.getElementById("test").textContent = response.data.msg;
+            } catch (error) {
+                document.getElementById("test").textContent = error.response.data.msg;
+            }
+        }
+        async function Deposit() {
+            let bal = document.getElementById("balance").value;
+            try {
+                const response = await axios.post(`http://localhost:5112/api/bank/deposit/${curUser.name}`, {
+                    Type: "Deposit",
+                    Amount: bal
+                })
+                document.getElementById("test").textContent = response.data.msg;
+            } catch (error) {
+                document.getElementById("test").textContent = error.response.data.msg;
+            }
+        }
+        async function Withdraw() {
+            let bal = document.getElementById("balance").value;
+            try {
+                const response = await axios.post(`http://localhost:5112/api/bank/withdraw/${curUser.name}`, {
+                    Type: "Withdraw",
+                    Amount: bal
+                })
+                document.getElementById("test").textContent = response.data.msg;
+            } catch (error) {
+                document.getElementById("test").textContent = error.response.data.msg;
+            }
+        }
+        async function Transfer() {
+            let bal = document.getElementById("balance").value;
+            let recipient = document.getElementById("recipient").value;
+            try {
+                const response = await axios.post(`http://localhost:5112/api/bank/transfer/${curUser.name}/${recipient}`, {
+                    Type: "Transfer",
+                    Amount: bal
+                })
+                document.getElementById("test").textContent = response.data.msg;
+            } catch (error) {
+                document.getElementById("test").textContent = error.response.data.msg;
+            }
+        }
+        function Transactions() {
+            axios.get(`http://localhost:5112/api/bank/transaction/${curUser.name}`)
+            .then(res => {
+                document.getElementById("transactions").innerHTML = 
+                `<pre>${JSON.stringify(res.data.transaction, null, 2)}<pre>`;
+            })
+            .catch(err => {
+                document.getElementById("test").textContent = err;
+            })
+        }
+        function Show() {
+            axios.get(`http://localhost:5112/api/bank/show`)
+            .then(res => {
+            console.log("Response data:", res.data);
+                let users = res.data;
+                let output = "";              
+                for (let key in users) {
+                    let u = users[key];
+                    output += `${key}. ${u.name} | ${u.pass}<br>`;
+                } document.getElementById("accounts").innerHTML = output;
+            })
+            .catch(err => {
+                document.getElementById("test").textContent = err;
+            })
+        }
+        async function TransRemove() {
+            let ref = "b7455b9f-f614-492d-8ae1-5a3a1c176d9c";
+            try {
+                const response = await axios.delete(`http://localhost:5112/api/bank/transremove/${curUser.name}/${ref}`)
+                document.getElementById("test").textContent = response.data.msg;
+            } catch (error) {
+                document.getElementById("test").textContent = error.response.data.msg;
+            }
+        }
+        async function Clear() {
+            try {
+                const response = await axios.delete(`http://localhost:5112/api/bank/clear`)
+                document.getElementById("test").textContent = response.data.msg;
+            } catch (error) {
+                document.getElementById("test").textContent = error.response.data;
+            }
+        }
+    </script>
+</body>
+</html>

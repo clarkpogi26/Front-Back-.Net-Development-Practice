@@ -1,0 +1,34 @@
+public async Task<IActionResult> Transfer(String sender, String recipient, [FromBody] TransRequest req)
+{
+    using (var transaction = context.Database.BeginTransaction())
+    {
+        try 
+        {
+            // Step 1: Update sender
+            var senderAccount = await context.Users.FindAsync(senderId);
+            senderAccount.Balance -= req.Amount;
+            
+            // Step 2: Update recipient  
+            var recipientAccount = await context.Users.FindAsync(recipientId);
+            recipientAccount.Balance += req.Amount;
+            
+            // Step 3: Add transaction records
+            context.Transactions.Add(senderTransaction);
+            context.Transactions.Add(recipientTransaction);
+            
+            // Step 4: Save all changes
+            await context.SaveChangesAsync();
+            
+            // Step 5: Commit - makes all changes permanent
+            await transaction.CommitAsync();
+            
+            return Ok(new { msg = "Transfer successful" });
+        }
+        catch (Exception ex)
+        {
+            // If ANYTHING fails, undo ALL changes
+            await transaction.RollbackAsync();
+            return StatusCode(500, new { msg = "Transfer failed" });
+        }
+    }
+}
