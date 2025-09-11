@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Web Page</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: black;
+    }
+    p, h1, h2, h3 {
+        animation: text-rainbow 10s infinite;
+    }
+    #transactions {
+        display: none;
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 2px 2px grey;
+    }
+    .transaction-item {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        margin: 10px 0;
+        padding: 15px;
+        box-shadow: 0 1px 3px grey;
+        transition: transform 0.2s, box-shadow 0.2;
+    }
+    .transaction-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px grey;
+    }
+    .transaction-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 10px;
+        align-items: center;
+    }
+    .transaction-info span {
+        background: #f1f3f4;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: black;
+    }
+    #to, #from {
+        background: rgb(204, 255, 227);
+    }
+    #type {
+        background: rgb(182, 182, 245);
+    }
+    #amount {
+        background: rgb(247, 247, 192);
+    }
+    #date {
+        background: rgb(250, 202, 250);
+    }
+    #reference {
+        background: rgb(250, 156, 156);
+    }
+    .transaction-item button {
+        background: rgb(248, 91, 91);
+        border: 1px solid grey;
+        border-radius: 10px;
+        padding: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: transform 0.2s;
+    }
+    .transaction-item button:hover {
+        transform: translateY(-2px);
+        background: rgb(240, 21, 21);
+    }
+    #authArea {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        border: 1px solid black;
+        padding: 16px;
+        border-radius: 30px;
+    }
+    #authArea p {
+        display: flex;
+        justify-content: center;
+    }
+    #gameArea {
+        display: none;
+    }
+    #atm {
+        display: none;
+    }
+    #accounts {
+        display: none;
+    }
+    button {
+        font-weight: bold;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+    #wholepass {
+        position: relative;
+    }
+    #wholepass input[type="checkbox"] {
+        position: absolute;
+        right: 10px;
+        top: 20%;
+    }
+    #wholepass input[type="text"] {
+        padding-right: 20px;
+    }
+    .ani {
+        position: absolute;        
+        box-shadow: 0 0 10px red, inset 0 0 10px red,
+                    0 0 20px red, inset 0 0 20px red,
+                    0 0 30px red, inset 0 0 30px red;
+        animation: anim 2s infinite;
+        pointer-events: none;
+    }
+    .ani:nth-child(1) {
+        height: 50px;
+        width: 50px;
+        border-radius: 200px;
+        padding: 150px;
+        animation-delay: 0.5s;
+    }
+    .ani:nth-child(2) {
+        height: 100px;
+        width: 100px;
+        border-radius: 300px;
+        padding: 200px;
+        animation-delay: 1s;
+    }
+    .ani:nth-child(3) {
+        height: 150px;
+        width: 150px;
+        border-radius: 400px;
+        padding: 250px;
+        animation-delay: 1.5s;
+    }
+    .ani:nth-child(4) {
+        height: 200px;
+        width: 200px;
+        border-radius: 500px;
+        padding: 300px;
+        animation-delay: 2s;
+    }
+    @keyframes anim {
+        0% {
+            box-shadow: 
+                    0 0 20px red,
+                    0 0 40px red,
+                    0 0 60px red,
+                    inset 0 0 20px red,
+                    inset 0 0 40px red;
+        }
+        14% {
+            box-shadow:
+                    0 0 20px orange,
+                    0 0 40px orange,
+                    0 0 60px orange,
+                    inset 0 0 20px orange,
+                    inset 0 0 40px orange;
+        }
+        28% {
+            box-shadow:
+                    0 0 20px yellow,
+                    0 0 40px yellow,
+                    0 0 60px yellow,
+                    inset 0 0 20px yellow,
+                    inset 0 0 40px yellow;
+        }
+        42% {
+            box-shadow: 
+                    0 0 20px green,
+                    0 0 40px green,
+                    0 0 60px green,
+                    inset 0 0 20px green,
+                    inset 0 0 40px green;
+        }
+        57% {
+            box-shadow:
+                    0 0 20px blue,
+                    0 0 40px blue,
+                    0 0 60px blue,
+                    inset 0 0 20px blue,
+                    inset 0 0 40px blue;
+        }
+        71% {
+            box-shadow:
+                    0 0 20px indigo,
+                    0 0 40px indigo,
+                    0 0 60px indigo,
+                    inset 0 0 20px indigo,
+                    inset 0 0 40px indigo;
+        }
+        85% {
+            box-shadow:
+                    0 0 20px purple,
+                    0 0 40px purple,
+                    0 0 60px purple,
+                    inset 0 0 20px purple,
+                    inset 0 0 40px purple;
+        }
+        100% {
+            box-shadow:
+                    0 0 20px red,
+                    0 0 40px red,
+                    0 0 60px red,
+                    inset 0 0 20px red,
+                    inset 0 0 40px red;
+        }
+    }
+    @keyframes text-rainbow {
+    0% {
+        color: red;
+        text-shadow: 0 0 15px red, 0 0 25px red;
+    }
+    14% {
+        color: orange;
+        text-shadow: 0 0 15px orange, 0 0 25px orange;
+    }
+    28% {
+        color: yellow;
+        text-shadow: 0 0 15px yellow, 0 0 25px yellow;
+    }
+    42% {
+        color: green;
+        text-shadow: 0 0 15px green, 0 0 25px green;
+    }
+    57% {
+        color: blue;
+        text-shadow: 0 0 15px blue, 0 0 25px blue;
+    }
+    71% {
+        color: indigo;
+        text-shadow: 0 0 15px indigo, 0 0 25px indigo;
+    }
+    85% {
+        color: purple;
+        text-shadow: 0 0 15px purple, 0 0 25px purple;
+    }
+    100% {
+        color: red;
+        text-shadow: 0 0 15px red, 0 0 25px red;
+    }
+}
+</style>
+<body>
+    <div class="ani"></div>
+    <div class="ani"></div>
+    <div class="ani"></div>
+    <div class="ani"></div>
+    <div id="authArea">
+        <p>Llabeauche Bank</p>
+    <input id="regname" placeholder="Username">
+    <div id="wholepass">
+    <input type="text" id="regpass" placeholder="Password">
+    <input type="checkbox" id="box" onclick="Checkbox()">
+    </div>
+    <button onclick="Register()">Register</button>
+    <button onclick="Login()">Login</button>
+    <p class="test"></p>
+    </div>
+    <div id="gameArea">
+    <h1 id="curuser"></h1>
+    <button onclick="OpenATM()">ATM</button>
+    <button onclick="Show()">Show</button>
+    <button onclick="Transactions()">Transactions</button>
+    <button onclick="Clear()">Clear</button>
+    <p id="accounts"></p>
+    <p id="transactions"></p>
+    <p class="test"></p>
+    </div>
+    <div id="atm">
+    <button onclick="OpenATM()">ATM</button>
+    <input id="balance" placeholder="Amount">
+    <input id="recipient" placeholder="Send to">
+    <button onclick="Transfer()">Send</button>    
+    <button onclick="Deposit()">Deposit</button>
+    <button onclick="Withdraw()">Withdraw</button>
+    <p class="test"></p>
+    </div>
+    <script>
+        let curUser = null;
+        async function Login() {
+            let uname = document.getElementById("regname").value;
+            let upass = document.getElementById("regpass").value;
+            try {
+                const response = await axios.post(`http://localhost:5112/api/bank/login`, {
+                Name: uname,
+                Pass: upass
+            })
+            curUser = response.data.user;
+            document.getElementById("curuser").textContent = `${curUser.name} | ${curUser.balance}`;
+            msg(response.data.msg);
+            document.getElementById("authArea").style.display = "none";
+            document.querySelectorAll(".ani").forEach(ani => {
+                ani.style.display = "none";
+            });
+            document.getElementById("gameArea").style.display = "block";
+            } catch (error) {
+                msg(error.response.data.msg);
+            }     
+        }
+        function Checkbox() {
+            const box = document.getElementById("box");
+            const upass = document.getElementById("regpass");
+            if (box.checked) {
+                upass.type = "password";
+            } else {
+                upass.type = "text";
+            }
+        }
+        async function Register() {
+            let regname = document.getElementById("regname").value;
+            let regpass = document.getElementById("regpass").value;
+            try {
+                const response = await axios.post(`http://localhost:5112/api/bank/register`, {
+                    Name: regname,
+                    Pass: regpass
+                })
+                msg(response.data.msg);
+            } catch (error) {
+                msg(error.response.data.msg);
+            }
+        }
+        async function Deposit() {
+            let bal = document.getElementById("balance").value;
+            try {
+                const response = await axios.post(`http://localhost:5112/api/bank/deposit/${curUser.name}`, {
+                    Type: "Deposit",
+                    Amount: bal
+                })
+                msg(response.data.msg);
+            } catch (error) {
+                msg(error.response.data.msg);
+            }
+        }
+        async function Withdraw() {
+            let bal = document.getElementById("balance").value;
+            try {
+                const response = await axios.post(`http://localhost:5112/api/bank/withdraw/${curUser.name}`, {
+                    Type: "Withdraw",
+                    Amount: bal
+                })
+                msg(response.data.msg);
+            } catch (error) {
+                msg(error.response.data.msg);
+            }
+        }
+        async function Transfer() {
+            let bal = document.getElementById("balance").value;
+            let recipient = document.getElementById("recipient").value;
+            try {
+                const response = await axios.post(`http://localhost:5112/api/bank/transfer/${curUser.name}/${recipient}`, {
+                    Type: "Transfer",
+                    Amount: bal
+                })
+                msg(response.data.msg);
+            } catch (error) {
+                msg(error.response.data.msg);
+            }
+        }
+        function Show() {
+            const a = document.getElementById("accounts");
+            if (a.style.display === "block") {
+                    a.style.display = "none";
+                    return;
+                }
+            axios.get(`http://localhost:5112/api/bank/show`)
+            .then(res => {
+            console.log("Response data:", res.data);
+                let users = res.data;
+                let output = "";              
+                for (let key in users) {
+                    let u = users[key];
+                    output += `${key}. ${u.name}<br>`;
+                }
+                a.innerHTML = output;
+                a.style.display = "block";
+            })
+            .catch(err => {
+                msg(err);
+            })
+        }
+        function Transactions() {
+            const t = document.getElementById("transactions");
+            if (t.style.display === "block") {
+                t.style.display = "none";
+                return;
+            }
+            axios.get(`http://localhost:5112/api/bank/transaction/${curUser.name}`)
+            .then(res => {
+                ShowTrans(res.data.transaction);              
+                t.style.display = "block";
+            })
+            .catch(err => {
+                msg(err.response.data.msg);
+            })
+        }
+        function ShowTrans(trans) {
+            const container = document.getElementById("transactions");
+            container.innerHTML = "";
+            for (let i = 0; i < trans.length; i++) {
+                const t = trans[i];
+                const tdiv = document.createElement("div");
+                tdiv.id = `${t.reference}`;
+                tdiv.className = "transaction-item";
+                tdiv.innerHTML = `
+                <div class="transaction-info">
+                ${t.from ? `<span id="from">From: ${t.from}</span>` : ''}
+                ${t.to ? `<span id="to">To: ${t.to}</span>` : ''}
+                ${t.type ? `<span id="type">Type: ${t.type}</span>` : ''}
+                ${t.amount ? `<span id="amount">Amount: ${t.amount}</span>` : ''}
+                ${t.date ? `<span id="date">Date: ${t.date}</span>` : ''}
+                ${t.reference ? `<span id="reference">Ref ID: ${t.reference}</span>` : ''}
+                    </div>
+                    <button onclick="TransRemove('${t.reference}')">
+                        Delete
+                    </button>
+                `;
+                container.appendChild(tdiv);
+            }
+        }
+        async function TransRemove(ref) {
+            try {
+                const response = await axios.delete(`http://localhost:5112/api/bank/transremove/${curUser.name}/${ref}`)
+                Transactions();
+                msg(response.data.msg);
+            } catch (error) {
+                msg(error.response.data.msg);
+            }
+        }
+        function OpenATM() {
+            const atm = document.getElementById("atm");
+            const game = document.getElementById("gameArea");
+            if (atm.style.display === "block") {
+                atm.style.display = "none";
+                game.style.display = "block";
+                return;
+            }
+            game.style.display = "none";
+            atm.style.display = "block";
+        }
+        async function Clear() {
+            try {
+                const response = await axios.delete(`http://localhost:5112/api/bank/clear`)
+                msg(response.data.msg);
+            } catch (error) {
+                msg(error.response.data.msg);
+            }
+        }
+        function msg(msg) {
+                document.querySelectorAll(".test").forEach(test => {
+                test.textContent = msg;
+                exp();
+            })
+        }
+        function exp() {
+            let stop = false;
+            const timeout = setTimeout(() => {
+                stop = true;
+            }, 5000)
+            const interval = setInterval(() => {
+                if (stop) {
+                    document.querySelectorAll(".test").forEach(test => {                 
+                        test.textContent = "";
+                    });
+                    clearInterval(interval);
+                        clearTimeout(timeout);
+                        return;
+                }
+            }, 1);
+        }
+    </script>
+</body>
+</html>
