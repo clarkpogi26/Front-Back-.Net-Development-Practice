@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: cursive;
+        user-select: none;
+    }
+    input {
+        font-family: cursive;
+    }
+    button {
+        font-family: cursive;
+    }
+    @keyframes expand {
+        from {
+            transform: scale(1);
+        } to {
+            transform: scale(1.1);
+        }
+    }
+    #authArea {
+        display: flex;
+        flex-direction: column;
+        border: 5px solid;
+        max-width: 200px;
+        max-height: 200px;
+        padding: 25px;
+        gap: 10px;
+    }
+    #authArea p {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+    }
+    #register, #login {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+    }
+    #gameArea {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border: 5px solid;
+        padding: 5px;   
+        margin: 0;
+    }
+    #curuser {
+        display: flex;
+        justify-content: center;
+        margin: 0;
+    }
+    #letters {
+        display: grid;
+        grid-template-columns: repeat(7, auto);
+        justify-content: center;
+        gap: 1px;
+    }
+    #letters button, #ntb, #btn {
+        height: 40px;
+        width: 40px;
+        border-radius: 10px;
+    }
+    #letters button:nth-child(22) {
+        grid-column-start: 2;
+    }
+    #s {
+        grid-column: 1;
+        grid-row: 4
+    }
+    #menu {
+        border: 5px solid;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        gap: 20px;
+        max-width: 250px;
+        max-height: 350px;
+    }
+    .hidden {
+        display: none !important;   
+    }
+    .return {
+        width: 25px;
+        height: 25px;
+        margin: 0;
+        box-sizing: border-box;
+    }
+    .inout, .emh, #hm, #scores {
+        margin: 0;
+    }
+    .top {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .lb-top {
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+    .top p {
+        margin: 0;
+        font-size: 15px;
+    }
+    #leaderboard {
+        display: flex;
+        flex-direction: column;
+        border: 3px solid;
+        padding: 0;
+        max-height: 300px;
+        height: 300px;
+        margin-top: 3px;
+    }
+    #lb {
+        display: none;
+        flex-direction: column;
+        border: 5px solid;
+        padding: 10px;
+    }
+    #lb-text {
+        margin-top: 5px;
+        margin-bottom: 10px;
+    }
+    .lb-btn:hover, .auth-btn:hover, .return:hover,
+    .confirm:hover, .emh:hover, #logout:hover, button:hover {
+        animation: expand 0.1s forwards;
+    }
+    #lb-btn-div {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        margin: 0;
+    }
+    #lb-btn-div p {
+        margin: 4px 0 0 0;
+    }
+    .player-row {
+        display: flex;
+        justify-content: space-between;
+        border: 1px solid;
+    }
+    .player-row-animation:hover {
+        background: lightgrey;
+    }
+</style>
+<body>
+    <div id="authArea">
+        <h3 id="hm" class="hidden">Hang Man</h3>
+        <p class="auth-btn" onclick="Regin('login');">Login</p>
+        <p class="auth-btn" onclick="Regin('register')">Register</p>
+        <p class="auth-btn" onclick="ShowLB()">Leaderboard</p>
+        <div id="login">
+                <div class="top">
+                <h3 class="return" id="return" onclick="Back2()"><</h3>
+                <p class="result"></p>
+                </div>
+                <h3 class="inout">Login</h3>
+                <input id="logname" class="log" placeholder="Username">
+                <input id="logpass" class="log" placeholder="Password" type="password">
+                <p class="confirm" onclick="Login()">Login</p>
+            </div>  
+            <div id="register">
+                <div class="top">
+                <h3 class="return" id="return" onclick="Back2()"><</h3>
+                <p class="result"></p>
+                </div>
+                <h3 class="inout">Register</h3>
+                <input id="regname" class="reg" placeholder="Username">
+                <input id="regpass" class="reg" placeholder="Password">
+                <p class="confirm" onclick="Register()">Register</p>
+            </div>
+                <!-- <button onclick="ShowUser()">Show User</button>
+                <button onclick="Delete()">Delete All Users</button>
+                <p id="users"></p>
+                <p class="result"></p> -->
+    </div>
+    <div id="menu" class="hidden">
+                <p id="scores"></p>
+                <h3 id="curuser"></h3>
+                <h4 id="animal" class="emh" onclick="Game('animal')">Animal</h4>
+                <h4 id="food" class="emh" onclick="Game('food')">Food</h4>
+                <h4 id="country" class="emh" onclick="Game('country')">Country</h4>
+                <h4 id="logout" onclick="Logout()">Logout</h4>
+            </div>
+    <div id="gameArea">
+            <h2 id="category"></h2>
+            <h2 id="curscore"></h2>
+            <svg id="hangman" width="220" height="300" viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto">
+  <g stroke="#222" stroke-width="6" stroke-linecap="round" fill="none">
+    <line x1="20" x2="150" y1="280" y2="280"/>
+    <line x1="60" x2="60" y1="280" y2="40"/>
+    <line x1="60" x2="140" y1="40" y2="40"/>
+    <line x1="140" x2="140" y1="40" y2="70"/>
+  </g>
+
+  <g id="part-1" class="part" stroke="#000" stroke-width="4" fill="none" display="none">
+    <circle cx="140" cy="95" r="20" stroke-linejoin="round"/> 
+  </g>
+
+  <g id="part-2" class="part" stroke="#000" stroke-width="4" display="none">
+    <line x1="140" y1="115" x2="140" y2="180"/> 
+  </g>
+
+  <g id="part-3" class="part" stroke="#000" stroke-width="4" display="none">
+    <line x1="140" y1="130" x2="115" y2="155"/>
+  </g>
+
+  <g id="part-4" class="part" stroke="#000" stroke-width="4" display="none">
+    <line x1="140" y1="130" x2="165" y2="155"/>
+  </g>
+
+  <g id="part-5" class="part" stroke="#000" stroke-width="4" display="none">
+    <line x1="140" y1="180" x2="120" y2="230"/>
+  </g>
+
+  <g id="part-6" class="part" stroke="#000" stroke-width="4" display="none">
+    <line x1="140" y1="180" x2="160" y2="230"/>
+  </g>
+</svg>
+            <h2 id="masked"></h2>
+            <div id="letters"></div>
+        </div>
+    <div id="lb">
+        <div class="lb-top">
+            <h3 class="auth-btn" class="return" onclick="Back2()"><</h3>
+            <p id="lb-text">Top #10 Leaderboard 🏆</p>
+            </div>
+        <input id="search-input" placeholder="Search..." onkeyup="Leaderboard(this.value)"> 
+        <div id="lb-btn-div">
+            <p class="lb-btn" onclick="Leaderboard('!')">📊</p>
+            <p class="lb-btn" onclick="Leaderboard('@')">🐒</p>
+            <p class="lb-btn" onclick="Leaderboard('%')">🍔</p>
+            <p class="lb-btn" onclick="Leaderboard('$')">🌏</p>
+        </div>
+        <p id="leaderboard"></p>
+    </div>
+    <script>
+        let curUser = null;
+        let curCat = null;
+        let score = 0;
+        let sum = null;
+        let last = "";
+        document.getElementById("hm").classList.remove("hidden");
+        const register = document.getElementById("register");
+        const login = document.getElementById("login");
+        const authArea = document.getElementById("authArea");
+        const gameArea = document.getElementById("gameArea");
+        const letters = document.getElementById("letters");
+        const curuser = document.getElementById("curuser");
+        const curscore = document.getElementById("curscore");
+        const scores = document.getElementById("scores");
+        const masked = document.getElementById("masked");
+        const status = document.getElementById("status");
+        const category = document.getElementById("category");
+        const menu = document.getElementById("menu");
+        const leaderboard = document.getElementById("leaderboard");
+        const lb = document.getElementById("lb");
+        const searchinput = document.getElementById("search-input");
+
+        const alphabet = "QWERTYUIOPASDFGHJKLZXCVBNM".split("");
+        const lettersDiv = document.getElementById("letters");
+        alphabet.forEach(letter => {
+            const btn = document.createElement("button");
+            btn.innerText = letter;
+            btn.id = letter;
+            btn.onclick = () => Guess(letter);
+            lettersDiv.appendChild(btn);
+            document.getElementById(letter).style.background = "white";
+        })
+        const spec = "sz".split("");
+        spec.forEach(s => {
+            const btn = document.createElement("button");
+            btn.id = s;
+            if (s === "s") {
+                btn.innerText = "<";
+                btn.onclick = () => Back();
+                lettersDiv.appendChild(btn);
+                document.getElementById(s).style.background = "rgb(248, 198, 206)";
+            } else if (s === "z") {
+                btn.onclick = () => Hint();
+                lettersDiv.appendChild(btn);
+                const hint = document.getElementById(s);
+                hint.style.background = "rgb(207, 239, 248)";
+                hint.addEventListener("mouseenter", () => {
+                    last = hint.innerText;
+                    btn.innerText = "?";
+                })
+                hint.addEventListener("mouseleave", () => {
+                    btn.innerText = last;
+                })
+            }
+        })
+        document.addEventListener('keydown', (e) => {   
+            const key = e.key.toUpperCase();
+            if (alphabet.includes(key))
+        Guess(key);
+        })
+        function Guess(let) {
+            axios.post(`http://localhost:5112/api/hangman/guess`, {
+                User: curUser.name,
+                Letter: let
+            })
+            .then(res => {
+                let r = res.data;
+                category.textContent = r.category[0].toUpperCase() + r.category.slice(1);
+                masked.textContent = r.masked;
+                r.guessed.forEach(l => {
+                    let btn = document.getElementById(l.toUpperCase());
+                    btn.style.background = "rgb(247, 114, 114)";
+                })
+                r.correct.forEach(l => {
+                    let btn = document.getElementById(l.toUpperCase());
+                    btn.style.background = "lightgreen";
+                })
+                if (r.result === false) {
+                    Progress(6 - r.lives);
+                }
+                if (r.status === "Won") {
+                    score++;
+                    curscore.textContent = score;
+                    Score(score, curCat);
+                    Run(3000, r.status);
+                } else if (r.status === "Lost") {
+                    Score(score, curCat);
+                    score = 0;
+                    Remaining("wrong").then(r => {
+                        r.forEach(c => {
+                            let btn = document.getElementById(c.toUpperCase());
+                            btn.style.background = "rgb(247, 247, 149)";
+                        })
+                    })
+                    Remaining("masked");
+                }
+                async function Run(ms, type) {
+                        await Sleep(ms);
+                        HangManReset();
+                        if (type === "Lost") {
+                            Back();
+                        } else if (type === "Won") {
+                            Game(curCat);
+                        }
+                    }
+            })
+        }
+        async function Remaining(x) {
+            const response = await axios.get(`http://localhost:5112/api/hangman/remaining/${curUser.name}`)
+            if (x === "wrong") {
+                return response.data.wrong;
+            } else if (x === "masked") {
+                masked.textContent = response.data.masked;
+            }
+        }
+        function Progress(n) {
+            const el = document.getElementById("part-" + n);
+                el.style.display = "block";
+        }
+        function Game(cat) {
+            gameArea.style.display = "flex";
+            menu.style.display = "none";
+            axios.post(`http://localhost:5112/api/hangman/game/${cat}`, {
+                Name: curUser.name
+            })
+            .then(res => {
+                let r = res.data;
+                document.getElementById("z").innerHTML = r.hints;
+                category.textContent = r.category[0].toUpperCase() + r.category.slice(1);
+                curscore.textContent = score;
+                curCat = r.category;
+                masked.textContent = r.masked;
+                menu.classList.add("hidden");
+            })
+        }
+        async function Score(score, cat) {
+            let x = curUser.streaks;
+            if (score > x[cat]) {
+                x[cat] = score;
+            }
+            let streak = { Animal: x.animal, Food: x.food, Country: x.country };
+            try {
+                const response = await axios.post(`http://localhost:5112/api/hangman/score`, {
+                    Name: curUser.name,
+                    Streaks: streak
+                })
+                sum = response.data.sum;
+                UpdateScore();
+            } catch (error) {
+                Msg(error.response.data.msg);
+            }
+        }
+        function Regin(type) {
+            if (type === "login") {
+                login.style.display = "flex";
+            } else if (type === "register") {
+                register.style.display = "flex";
+            }
+            document.querySelectorAll(".auth-btn").forEach(btn => {
+                btn.style.display = "none";
+            })
+            document.getElementById("hm").classList.add("hidden");
+        }
+        async function Register() {
+            const uname = document.getElementById("regname").value;
+            const upass = document.getElementById("regpass").value;
+            try {
+                const response = await axios.post(`http://localhost:5112/api/hangman/register`, {
+                Name: uname,
+                Pass: upass
+            })
+            Msg(response.data.msg);
+            } catch (err) {
+                Msg(err.response.data.msg);
+                ResetRes();
+            }
+        }
+        function Login() {
+            const uname = document.getElementById("logname").value;
+            const upass = document.getElementById("logpass").value;
+            axios.post(`http://localhost:5112/api/hangman/login`, {
+                Name: uname,
+                Pass: upass
+            })
+            .then(res => {
+                authArea.style.display = "none";
+                register.style.display = "none";
+                login.style.display = "none";
+                menu.style.display = "flex";
+                curUser = res.data;
+                x = curUser.streaks;
+                UpdateScore();
+                curuser.textContent = curUser.name;
+                menu.classList.remove("hidden");
+                document.querySelectorAll("#login .log").forEach(i => {
+                i.value = "";
+            })
+            document.querySelectorAll("#register .reg").forEach(i => {
+                i.value = "";
+            })
+            })
+            .catch(err => {
+                Msg(err.response.data.msg || err.message);
+                ResetRes();
+            })
+        }
+        function Logout() {
+            curUser = null;
+            menu.style.display = "none";
+            authArea.style.display = "flex";
+            register.style.display = "none";
+            login.style.display = "none";
+            document.querySelectorAll(".auth-btn").forEach(btn => {
+                btn.style.display = "flex";
+            })
+            document.getElementById("hm").classList.remove("hidden");
+        }
+        function Hint() {
+            axios.get(`http://localhost:5112/api/hangman/hint/${curUser.name}`)
+            .then(res => {
+                Guess(res.data.let);
+                document.getElementById("z").innerHTML = res.data.hints;
+                last = res.data.hints;
+            })
+            .catch(err => {
+                console.log(err.response?.data.msg);
+            })
+        }
+        function Leaderboard(search) {
+            const types = ["!", "@", "%", "$"];
+            const num = ["4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
+            leaderboard.textContent = "";
+            let increm = 1;
+            axios.get(`http://localhost:5112/api/hangman/leaderboard/${search}`)
+            .then(res => {
+                users = res.data;
+                const top = users.slice(0, 3).map(i => i.value.name);
+                let no = 1;
+                users.forEach(i => {
+                    const u = i.value;
+                    const x = u.streaks;
+                    const np = document.createElement("span");
+                    np.className = "player-name";
+                    const sp = document.createElement("span");
+                    sp.className = "player-score";
+                    const udiv = document.createElement("div");
+                    udiv.className = "player-row";
+                    udiv.id = u.name;
+                    np.textContent = `${types.includes(search) ? num[no - 4 ] : '🔎'} ${u.name}`;
+                    no++;
+                    if (search === "@") {
+                        sp.textContent = `${x.animal}🐒`;
+                    } else if (search === "%") {
+                        sp.textContent = `${x.food}🍔`;
+                    } else if (search === "$") {
+                        sp.textContent = `${x.country}🌏`;
+                    } else if (search === "!") {
+                        sp.textContent = `${u.sum}📊`;
+                    } else {
+                        sp.textContent = `🔍`;
+                    }
+                    udiv.appendChild(np);
+                    udiv.appendChild(sp);
+                    leaderboard.appendChild(udiv);
+                    if (top.includes(u.name) && types.includes(search)) {
+                        const j = document.getElementById(u.name);
+                        switch (increm) {
+                            case 1: j.style.color = "gold";
+                            np.textContent = `🥇 ${u.name}`;break;
+                            case 2: j.style.color = "silver";
+                            np.textContent = `🥈 ${u.name}`;break;
+                            case 3: j.style.color = "brown";
+                            np.textContent = `🥉 ${u.name}`;break;
+                        }
+                        increm++;
+                    }
+                    document.getElementById(u.name).classList.add("player-row-animation");
+                })
+            })
+            .catch(err => {
+                leaderboard.textContent = "";
+            })
+        }
+        function ShowLB() {
+            authArea.style.display = "none";
+            lb.style.display = "flex";
+        }
+        function Back() {
+            menu.style.display = "flex";
+            menu.classList.remove("hidden");
+            gameArea.style.display = "none";
+            score = 0;
+            curscore.textContent = score;
+            HangManReset();
+        }
+        function Back2() {
+            login.style.display = "none";
+            register.style.display = "none";
+            authArea.style.display = "flex";
+            lb.style.display = "none";
+            leaderboard.textContent = "";
+            searchinput.value = "";
+            document.querySelectorAll(".auth-btn").forEach(btn => {
+                btn.style.display = "flex";
+            })
+            document.getElementById("hm").classList.remove("hidden");
+            document.querySelectorAll("#authArea .log").forEach(i => {
+                i.value = "";
+            })
+            document.querySelectorAll("#authArea .reg").forEach(i => {
+                i.value = "";
+            })
+        }
+        function Sleep(ms) {
+            return new Promise(r => setTimeout(r, ms))
+        }
+        function HangManReset() {
+            document.querySelectorAll("#letters button").forEach(btn => {
+                if (alphabet.includes(btn.id)) {
+                    btn.style.background = "white";
+                }
+            })
+            document.querySelectorAll("#hangman .part").forEach(p => {
+                p.style.display = "none";
+            })
+        }
+        async function ResetRes() {
+                await Sleep(5000);
+                document.querySelectorAll(".result").forEach(r => {
+                r.textContent = "";
+            })
+            }
+        function UpdateScore() {
+            x = curUser.streaks;
+                scores.textContent = `
+                ㅤㅤㅤㅤㅤ📊 ${sum ?? curUser.sum}
+                ㅤㅤㅤㅤㅤㅤ🐒 ${x.animal}ㅤ🍔 ${x.food}ㅤ🌏 ${x.country}
+                `;
+        }
+        function Msg(msg) {
+            document.querySelectorAll(".result").forEach(test => {
+                test.textContent = msg;
+            })
+        }
+    </script>
+</body>
+</html>
